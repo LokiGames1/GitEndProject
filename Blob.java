@@ -1,91 +1,93 @@
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-public class Blob {
-    private Path toTextFile;
-    private String fileName;
-    private String fileContents;
-    private String shaName;
+import java.util.zip.GZIPOutputStream;
+import java.math.BigInteger;
 
-    public Blob(String nameOfFile) throws IOException {
-        toTextFile = Paths.get(nameOfFile);
-        fileName = nameOfFile;
-        fileContents = readFile(nameOfFile);
-        shaName = doSha(fileContents);
+public class Blob {
+
+    public static void main(String[] args) throws IOException {
+        try {
+            Blob b = new Blob("contents.txt");
+            System.out.println(b.getSHA());
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
     }
 
-    public static String doSha(String input) {
+    private String sha;
+
+    public Blob(String file) throws NoSuchAlgorithmException, IOException {
+        sha = generateSHA(file);
+
+    }
+
+    public String getSHA() {
+        return sha;
+    }
+
+    public static String generateSHA(String fileName) throws NoSuchAlgorithmException, IOException {
+        MessageDigest digest = MessageDigest.getInstance("SHA-1");
+        String strContent = readFile(fileName);
+        byte[] content = compressToBinary(strContent);
+        byte[] messageDigest = digest.digest(content);
+        BigInteger no = new BigInteger(1, messageDigest);
+        String hashtext = no.toString(16);
+        File dir = new File("./objects");
+        if (!dir.exists()) {
+            dir.mkdir();
+        }
+        writeToFile(content, "./objects/" + hashtext);
+        return hashtext;
+
+    }
+
+    public static String readFile(String file) throws FileNotFoundException {
+        FileReader fr;
         try {
-            // getInstance() method is called with algorithm SHA-1
-            MessageDigest md = MessageDigest.getInstance("SHA-1");
-
-            // digest() method is called
-            // to calculate message digest of the input string
-            // returned as array of byte
-            byte[] messageDigest = md.digest(input.getBytes());
-
-            // Convert byte array into signum representation
-            BigInteger no = new BigInteger(1, messageDigest);
-
-            // Convert message digest into hex value
-            String hashtext = no.toString(16);
-
-            // Add preceding 0s to make it 32 bit
-            while (hashtext.length() < 32) {
-                hashtext = "0" + hashtext;
+            fr = new FileReader(file);
+            BufferedReader br = new BufferedReader(fr);
+            String c;
+            String sub = "";
+            try {
+                while (br.ready()) {
+                    c = br.readLine();
+                    sub += c;
+                    if (br.ready()) {
+                        sub += "\n";
+                    }
+                }
+                br.close();
+                fr.close();
+                return sub;
+            } catch (IOException e) {
+                e.printStackTrace();
             }
 
-            // return the HashText
-            return hashtext;
-        }
-
-        // For specifying wrong message digest algorithms
-        catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
+            return null;
+        } catch (FileNotFoundException e) {
+            throw e;
         }
     }
 
-    public static String readFile(String fileName) throws IOException {
-        String output = "";
-        BufferedReader reader = new BufferedReader(new FileReader(fileName));
-        while (reader.ready()) {
-            int letter = reader.read();
-            output += (char) letter;
+    public static byte[] compressToBinary(String text) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (GZIPOutputStream gzipOS = new GZIPOutputStream(baos)) {
+            gzipOS.write(text.getBytes("UTF-8"));
         }
-        reader.close();
-        return output;
+        return baos.toByteArray();
     }
 
-    public String getShaName() {
-        return shaName;
+    public static void writeToFile(byte[] text, String fileName) {
+        try {
+            FileOutputStream fos = new FileOutputStream(fileName);
+            fos.write(text, 0, text.length);
+            fos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
-    public byte[] makeBite(String fileName) throws IOException {
-        String inputString = readFile(fileName);
-        byte[] byteArray = inputString.getBytes();
-
-        return byteArray;
-    }
-
-    public void makeBlob() throws IOException {
-        byte[] insideFile = makeBite(fileName);
-        String folderPath = "Objects";
-        Path toObjectsFolder = Paths.get(folderPath, doSha(fileName));
-        Files.write(toObjectsFolder, insideFile);
-    }
-
-    public Path getToTextFile() {
-        return toTextFile;
-    }
-
-    public Object getFileContents() {
-        return fileContents;
-    }
 }

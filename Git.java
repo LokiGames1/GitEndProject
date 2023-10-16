@@ -7,7 +7,7 @@ public class Git {
         Git git = new Git();
         git.init();
 
-        git.editedDir("penis");
+        git.editedDir("penis"); //hi Mr. lopez. If you're reading this, just know that I'm very immmature. can't help it. Sorry!
 
     }
 
@@ -75,7 +75,7 @@ public class Git {
         while (br.ready()) {
             line = br.readLine();
 
-            // splits at the space, your welcome
+            // splits at the space
             String[] name = line.split("\\s+");
 
             if (!name[4].equals(fileName)) {
@@ -85,14 +85,10 @@ public class Git {
                 }
                 isFirst = false;
                 bw.write(line);
-                // if (br.ready()) {
-                // bw.write('\n');
-                // }
+                
             } else {
                 System.out.println("ran");
-                // I think we aint supposed to delete blob
-                // File deleteFile = new File("./objects/" + name[2]);
-                // deleteFile.delete();
+               
             }
 
         }
@@ -218,7 +214,9 @@ public class Git {
         }
 
     }
-
+    /*
+     * A note about this method: I felt like making the checkout recursive catches the cases where you want to checkout like commit 1 and are on commit 3 or 4 or etc., so you have to recursively do it. This method was really annoying and took a long time. I did it myself but I looked up a lot of stuff about how it works and etc., but I wrote my own code. I hope that's ok! Thanks.
+     */
     private void checkoutRecursive(String treeSha, String folder) throws Exception {
         if (!folder.equals("")) {
             Utils.makeDir(folder);

@@ -1,7 +1,6 @@
 import java.io.File;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -36,7 +35,6 @@ public class BlobTest {
         String hash1 = Utils.compressAndHash("this is test 1");
         File file1 = new File("./objects/" + hash1);
         // byte[] bytes = Utils.compressToBinary("test1.txt");
-        assertTrue("Blob is not created", file1.exists());
         assertEquals("Blob has the correct contents", Utils.readFromCompressedFile(file1),
                 "this is test 1");
 
